@@ -3,10 +3,13 @@ import Helllo from './Hello';
 import './App.css';
 import Wrapper from './Wrapper';
 import Counter from './Counter';
+import InputSample from './InputSample';
 
 function App() {
   return (
-    <Counter />
+    <InputSample />
+
+    //<Counter />
 
     // <Wrapper>
     //   <Helllo name = "react" color = "red" isSpecial={true}/>
@@ -65,4 +68,24 @@ const setNumber = numberState[1];
 ex)const onIncrease = () => {
     setNumber(prevNumber => prevNumber + 1);
   }
+
+*input 상태 관리하기
+
+리액트 상태에서 객체를 수정해야 할 때에는,
+
+inputs[name] = value;
+이런식으로 직접 수정하면 안됩니다.
+
+그 대신에, 새로운 객체를 만들어서 새로운 객체에 변화를 주고, 이를 상태로 사용해주어야 합니다.
+
+setInputs({
+  ...inputs,
+  [name]: value
+});
+
+여기서 사용한 ... 문법은 js의 spread 문법입니다. 객체의 내용을 모두 "펼쳐서" 기존 객체를 복사해주는데요
+
+이러한 작업을, "불변성을 지킨다" 라고 부릅니다. 불변성을 지켜주어야만 리액트 컴포넌트에서 상태가 업데이트가 됐음을 감지 할 수 있고 이에 따라 필요한 리렌더링이 진행됩니다. 
+만약에 inputs[name] = value 이런식으로 기존 상태를 직접 수정하게 되면, 값을 바꿔도 리렌더링이 되지 않습니다.
+추가적으로, 리액트에서는 불변성을 지켜주어야만 컴포넌트 업데이트 성능 최적화를 제대로 할 수 있습니다.
 */
