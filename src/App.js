@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import Helllo from './Components/Hello';
 import './App.css';
 import Wrapper from './Components/Wrapper';
@@ -7,8 +7,32 @@ import InputSample from './Components/InputSample';
 import UserList from './Components/UserList';
 
 function App() {
+  const users = [
+    {
+        id: 1,
+        username: 'Gihong',
+        email: 'kimgihong9@naver.com'
+    },
+    {
+        id: 2,
+        username: 'Hongsi',
+        email: 'kimgihong04@naver.com'
+    },
+    {
+        id: 3,
+        username: 'KimHong',
+        email: 'kimgihong1127@naver.com'
+    },
+];
+
+  const nextId = useRef(4);
+  
+  const onCreate = () => {
+    console.log(nextId.current);
+    nextId.current += 1;
+  }
   return (
-    <UserList />
+    <UserList users={users}/>
     // <InputSample />
 
     //<Counter />
