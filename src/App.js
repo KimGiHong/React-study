@@ -1,10 +1,10 @@
 import React from 'react';
-import Helllo from './Hello';
+import Helllo from './Components/Hello';
 import './App.css';
-import Wrapper from './Wrapper';
-import Counter from './Counter';
-import InputSample from './InputSample';
-import UserList from './UserList';
+import Wrapper from './Components/Wrapper';
+import Counter from './Components/Counter';
+import InputSample from './Components/InputSample';
+import UserList from './Components/UserList';
 
 function App() {
   return (
