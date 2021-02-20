@@ -1,40 +1,88 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import Helllo from './Components/Hello';
 import './App.css';
 import Wrapper from './Components/Wrapper';
 import Counter from './Components/Counter';
 import InputSample from './Components/InputSample';
 import UserList from './Components/UserList';
+import CreateUser from './Components/CreateUser';
 
 function App() {
-  const users = [
+  const  [inputs, setInputs] = useState({
+    username: '',
+    email: '',
+  });
+  const { username , email} = inputs;
+
+  const onChange = e => {
+    const { name , value} = e.target;
+    setInputs({
+      ...inputs,
+      [name]: value
+    });
+  };
+  const [users,setUsers] = useState([
     {
         id: 1,
         username: 'Gihong',
-        email: 'kimgihong9@naver.com'
+        email: 'kimgihong9@naver.com',
+        active: true,
     },
     {
         id: 2,
         username: 'Hongsi',
-        email: 'kimgihong04@naver.com'
+        email: 'kimgihong04@naver.com',
+        active: false,
     },
     {
         id: 3,
         username: 'KimHong',
-        email: 'kimgihong1127@naver.com'
+        email: 'kimgihong1127@naver.com',
+        active: false,
     },
-];
+]);
 
   const nextId = useRef(4);
-  
-  const onCreate = () => {
-    console.log(nextId.current);
+
+  const onCreate = () => { //배열 추가할 때
+    const user = {
+      id: nextId.current,
+      username,
+      email,
+    };
+    //setUsers([...users,user]);
+    setUsers([users.concat(user)]);
+    setInputs({
+      username:'',
+      email:''
+    });
     nextId.current += 1;
   }
-  return (
-    <UserList users={users}/>
-    // <InputSample />
+  
+  const onRemove = id => { //배열 제거할 때
+    setUsers(users.filter(user => user.id !== id));
+  };
 
+  const onToggle = id => { //배열 수정할 때
+      setUsers(users.map(
+        user => user.id === id
+          ? { ...user, active : !user.active}
+          :user
+      ));
+  };
+
+
+  return (
+    <>
+      <CreateUser
+        username={username}
+        email={email}
+        onChange={onChange}
+        onCreate={onCreate}  
+      />
+      <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
+    </>
+    // <InputSample />
     //<Counter />
 
     // <Wrapper>
@@ -92,52 +140,101 @@ const setNumber = numberState[1];
 
 함수형 업데이트
 
-지금은 Setter 함수를 사용 할 때, 업데이트 하고 싶은 새로운 값을 파라미터로 넣어주고 있는데요, 그 대신에 기존 값을 어떻게 업데이트 할 지에 대한 함수를 등록하는 방식으로도 값을 업데이트 할 수 있습니다.
+지금은 Setter 함수를 사용 할 때, 업데이트 하고 싶은 새로운 값을 파라미터로 넣어주고 있는데, 그 대신에 기존 값을 어떻게 업데이트 할 지에 대한 함수를 등록하는 방식으로도 값을 업데이트 할 수 있다.
 ex)const onIncrease = () => {
     setNumber(prevNumber => prevNumber + 1);
   }
-
-
 
 *input 상태 관리하기 inputSample.js
 
 리액트 상태에서 객체를 수정해야 할 때에는,
 
 inputs[name] = value;
-이런식으로 직접 수정하면 안됩니다.
+이런식으로 직접 수정 X
 
-그 대신에, 새로운 객체를 만들어서 새로운 객체에 변화를 주고, 이를 상태로 사용해주어야 합니다.
+그 대신에, 새로운 객체를 만들어서 새로운 객체에 변화를 주고, 이를 상태로 사용해주어야 한다.
 
 setInputs({
   ...inputs,
   [name]: value
 });
 
-여기서 사용한 ... 문법은 js의 spread 문법입니다. 객체의 내용을 모두 "펼쳐서" 기존 객체를 복사해주는데요
+여기서 사용한 ... 문법은 js의 spread 문법입니다. 객체의 내용을 모두 "펼쳐서" 기존 객체를 복사해줍니다.
 
-이러한 작업을, "불변성을 지킨다" 라고 부릅니다. 불변성을 지켜주어야만 리액트 컴포넌트에서 상태가 업데이트가 됐음을 감지 할 수 있고 이에 따라 필요한 리렌더링이 진행됩니다. 
-만약에 inputs[name] = value 이런식으로 기존 상태를 직접 수정하게 되면, 값을 바꿔도 리렌더링이 되지 않습니다.
-추가적으로, 리액트에서는 불변성을 지켜주어야만 컴포넌트 업데이트 성능 최적화를 제대로 할 수 있습니다.
+이러한 작업을, "불변성을 지킨다" 라고 부릅니다. 불변성을 지켜주어야만 리액트 컴포넌트에서 상태가 업데이트가 됐음을 감지 할 수 있고 이에 따라 필요한 리렌더링이 진행된다.
+만약에 inputs[name] = value 이런식으로 기존 상태를 직접 수정하게 되면, 값을 바꿔도 리렌더링이 되지 않는다.
+추가적으로, 리액트에서는 불변성을 지켜주어야만 컴포넌트 업데이트 성능 최적화를 제대로 할 수 있다.
 
 
 
 *useRef inputSample.js
 
-useRef() 를 사용하여 Ref 객체를 만들고, 이 객체를 우리가 선택하고 싶은 DOM 에 ref 값으로 설정해주어야 합니다. 그러면, Ref 객체의 .current 값은 우리가 원하는 DOM 을 가르키게 됩니다.
-onReset 함수에서 input 에 포커스를 하는 focus() DOM API 를 호출해줄 수 있습니다.
+useRef() 를 사용하여 Ref 객체를 만들고, 이 객체를 우리가 선택하고 싶은 DOM 에 ref 값으로 설정해주어야 한다. 그러면, Ref 객체의 .current 값은 우리가 원하는 DOM 을 가르키게 된다.
+onReset 함수에서 input 에 포커스를 하는 focus() DOM API 를 호출해줄 수 있다.
 
 
 
 *배열 렌더링 UserList.js
 
-배열이 고정적이라면 상관없겟지만, 배열의 인덱스를 하나하나 조회해가면서 렌더링하는 방법은 동적인 배열을 렌더링하지 못합니다.
-동적인 배열을 렌더링해야 할 때에는 자바스크립트 배열의 내장함수 map() 을 사용합니다.
-map() 함수는 배열안에 있는 각 원소를 변환하여 새로운 배열을 만들어줍니다. 
-리액트에서 동적인 배열을 렌더링해야 할 때는 이 함수를 사용하여 일반 데이터 배열을 리액트 엘리먼트로 이루어진 배열로 변환해주면 됩니다.
+배열이 고정적이라면 상관없겟지만, 배열의 인덱스를 하나하나 조회해가면서 렌더링하는 방법은 동적인 배열을 렌더링하지 못함.
+동적인 배열을 렌더링해야 할 때에는 자바스크립트 배열의 내장함수 map() 을 사용한다.
+map() 함수는 배열안에 있는 각 원소를 변환하여 새로운 배열을 만들어준다.
+리액트에서 동적인 배열을 렌더링해야 할 때는 이 함수를 사용하여 일반 데이터 배열을 리액트 엘리먼트로 이루어진 배열로 변환해주면 된다.
 
-리액트에서 배열을 렌더링 할 때에는 key 라는 props 를 설정해야합니다. key 값은 각 원소들마다 가지고 있는 고유값으로 설정을 해야합니다. 
-지금의 경우엔 id 가 고유 값이지요.
+리액트에서 배열을 렌더링 할 때에는 key 라는 props 를 설정해야합니다. key 값은 각 원소들마다 가지고 있는 고유값으로 설정을 해야한다.
+지금의 경우엔 id 가 고유 값이다.
 
-만약 배열 안의 원소가 가지고 있는 고유한 값이 없다면 map() 함수를 사용 할 때 설정하는 콜백함수의 두번째 파라미터 index 를 key 로 사용하시면 됩니다.
-각 고유 원소에 key 가 있어야만 배열이 업데이트 될 때 효율적으로 렌더링 될 수 있습니다.
+만약 배열 안의 원소가 가지고 있는 고유한 값이 없다면 map() 함수를 사용 할 때 설정하는 콜백함수의 두번째 파라미터 index 를 key 로 사용하면 된다.
+각 고유 원소에 key 가 있어야만 배열이 업데이트 될 때 효율적으로 렌더링 될 수 있다.
+
+
+*배열 추가 UserList.js , CreateUser.js
+
+배열에 변화를 줄 때에는 객체와 마찬가지로, 불변성을 지켜주어야 한다. 
+그렇기 때문에, 배열의 push, splice, sort 등의 함수를 사용하면 안된다. 
+만약에 사용해야 한다면, 기존의 배열을 한번 복사하고 나서 사용해야 할 것.
+
+불변성을 지키면서 배열에 새 항목을 추가하는 방법 두가지.
+
+첫번째 spread 연산자를 사용하는 것
+둘 째 concat 함수를 사용하는 것
+  const onCreate = () => {
+    const user = {
+      id: nextId.current,
+      username,
+      email,
+    };
+    setUsers([...users,user]); -> 이처럼 spread연산자를 이용하여 배열을 추가할 수 있다.
+    setUsers([users.concat(user)]); -> concat 함수는 기존의 배열을 수정하지 않고, 새로운 원소가 추가된 새로운 배열을 만들어준다
+    setInputs({
+      username:'',
+      email:''
+    });
+    nextId.current += 1;
+  }
+
+이처럼 배열에 새 항목을 추가 할 때에는 이렇게 spread 연산자를 사용하거나, concat 을 사용하도록 하자.
+
+
+*배열 삭제 UserList.js , CreateUser.js
+
+User 컴포넌트의 삭제 버튼이 클릭 될 때는 user.id 값을 앞으로 props 로 받아올 onRemove 함수의 파라미터로 넣어서 호출해주어야 한다.
+여기서 onRemove "id 가 __인 객체를 삭제해라" 라는 역할을 가지고 있습니다.
+이 onRemove 함수는 UserList 에서도 전달 받을것이며, 이를 그대로 User 컴포넌트에게 전달해줄것입니다.
+
+onRemove 구현
+배열에 있는 항목을 제거할 때에는, 추가할떄와 마찬가지로 불변성을 지켜가면서 업데이트를 해주어야 합니다.
+불변성을 지키면서 특정 원소를 배열에서 제거하기 위해서는 filter 배열 내장 함수를 사용하는것이 가장 편할 것이다.
+이 함수는 배열에서 특정 조건이 만족하는 원소들만 추출하여 새로운 배열을 만들어줍니다.
+
+onClick={() => onRemove(user.id)} 이런식으로 함수를 넣어주지 않고
+onClick={onRemove(user.id)} 이 코드 처럼 함수를 호출했을 시에는 렌더링한 부분이 모두 사라지게 된다.
+
+
+*배열 항목 수정
+
+배열의 불변성을 유지하면서 배열을 업데이트 할 때에 map 함수를 사용 할 수 있다.
+id 값을 비교해서 id 가 다르다면 그대로 두고, 같다면 active 값을 반전시키도록 구현
+onToggle를 받아와서 User 에게 전달해주고, onRemove 를 구현했었던것처럼 onToggle 에 id 를 넣어서 호출하면 수정이 가능하다.
+
 */

@@ -1,36 +1,36 @@
 import React from 'react';
 
-function User({user}){
+function User({user, onRemove, onToggle}){
+    const { username, email, id, active} = user; /*이처럼 추출하여 쓸 수 있다 user.~ 반복 하기 귀찮을때*/
     return(
         <div>
-            <b>{user.username}</b><span>({user.email})</span>
+            <b style={{
+                color: active ? 'green' : 'black',
+                cursor: 'pointer'
+            }}
+            onClick={() => onToggle(id)}
+            >
+                {username}
+            </b>
+            &nbsp;
+            <span>({email})</span>
+            <button onClick={() => onRemove(id)}>삭제</button>
         </div>
     )
 }
 
-function UserList({users}) {
-    // const users = [
-    //     {
-    //         id: 1,
-    //         username: 'Gihong',
-    //         email: 'kimgihong9@naver.com'
-    //     },
-    //     {
-    //         id: 2,
-    //         username: 'Hongsi',
-    //         email: 'kimgihong04@naver.com'
-    //     },
-    //     {
-    //         id: 3,
-    //         username: 'KimHong',
-    //         email: 'kimgihong1127@naver.com'
-    //     },
-    // ];
+function UserList({users, onRemove, onToggle}) {
     return(
         <div>
             {
                 users.map(
-                    user => (<User user ={user} key={user.id}/>)
+                    user => (
+                        <User 
+                            user ={user} 
+                            key={user.id} 
+                            onRemove={onRemove}
+                            onToggle={onToggle}
+                    />)
                 )
             }
         </div>
