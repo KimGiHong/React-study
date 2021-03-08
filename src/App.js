@@ -1,11 +1,15 @@
-import React, {useRef, useState} from 'react';
-import Helllo from './Components/Hello';
-import './App.css';
-import Wrapper from './Components/Wrapper';
-import Counter from './Components/Counter';
-import InputSample from './Components/InputSample';
+import React, {useRef, useState, useMemo} from 'react';
+// import Helllo from './Components/Hello';
+// import Wrapper from './Components/Wrapper';
+// import Counter from './Components/Counter';
+// import InputSample from './Components/InputSample';
 import UserList from './Components/UserList';
 import CreateUser from './Components/CreateUser';
+
+function countActiveUsers(users){  // 활성 사용자 수를 세는 함수
+  console.log('활성 사용자 수를 세는중 ...');
+  return users.filter(user => user.active).length;
+}
 
 function App() {
   const  [inputs, setInputs] = useState({
@@ -51,13 +55,13 @@ function App() {
       email,
     };
     //setUsers([...users,user]);
-    setUsers([users.concat(user)]);
+    setUsers(users.concat(user));
     setInputs({
       username:'',
       email:''
     });
     nextId.current += 1;
-  }
+  };
   
   const onRemove = id => { //배열 제거할 때
     setUsers(users.filter(user => user.id !== id));
@@ -70,7 +74,7 @@ function App() {
           :user
       ));
   };
-
+  const count = useMemo(() => countActiveUsers(users), [users]);
 
   return (
     <>
@@ -81,7 +85,10 @@ function App() {
         onCreate={onCreate}  
       />
       <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
+      <div>활성 사용자 수: {count}</div>
     </>
+
+
     // <InputSample />
     //<Counter />
 
@@ -273,7 +280,7 @@ deps 에 특정 값을 넣게 된다면, 컴포넌트가 처음 마운트 될 �
             console.log('user값이 바뀌기 전');
             console.log(user)
         }
-    }, [user]);
+    }, [user]);  -> 이렇게 뒤에 값을 넣는게 deps배열인것 같다.
 
     이렇게 코드를 작성했다면 컴포넌트를 추가 삭제 또는 업데이트 하기 전에 
     'user값이 설정됨'이 호출되고 user값들이 호출된다음 'user값이 바뀌기 전'이 호출된다.

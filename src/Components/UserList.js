@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react';
 
-function User({user, onRemove, onToggle}){
-    const { username, email, id, active} = user; /*이처럼 추출하여 쓸 수 있다 user.~ 반복 하기 귀찮을때*/
-
+//deps파라미터를 생략해서 이렇게 코드를 짤수 있다.
+function User({ user, onRemove, onToggle }) {
     useEffect(() => {
-        console.log(user);
+      console.log(user);
     });
+
+// function User({user, onRemove, onToggle}){
+//     const { username, email, id, active} = user; 
+    /*이처럼 추출하여 쓸 수 있다 user.~ 반복 하기 귀찮을때*/
+
     // 알아둬야하는것 useEffect을 사용할땐 첫번째 파라미터에는 함수를 등록하고 두번째 파라미터에는 deps라는 배열을 등록한다.
 
     // useEffect(() => {
@@ -26,16 +30,16 @@ function User({user, onRemove, onToggle}){
     return(
         <div>
             <b style={{
-                color: active ? 'green' : 'black',
+                color: user.active ? 'green' : 'black',
                 cursor: 'pointer'
             }}
-            onClick={() => onToggle(id)}
+            onClick={() => onToggle(user.id)}
             >
-                {username}
+                {user.username}
             </b>
             &nbsp;
-            <span>({email})</span>
-            <button onClick={() => onRemove(id)}>삭제</button>
+            <span>({user.email})</span>
+            <button onClick={() => onRemove(user.id)}>삭제</button>
         </div>
     )
 }
@@ -59,3 +63,4 @@ function UserList({users, onRemove, onToggle}) {
 }
 
 export default UserList;
+
