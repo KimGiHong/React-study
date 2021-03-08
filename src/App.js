@@ -231,10 +231,59 @@ onClick={() => onRemove(user.id)} 이런식으로 함수를 넣어주지 않고
 onClick={onRemove(user.id)} 이 코드 처럼 함수를 호출했을 시에는 렌더링한 부분이 모두 사라지게 된다.
 
 
-*배열 항목 수정
+*배열 항목 수정 UserList.js
 
 배열의 불변성을 유지하면서 배열을 업데이트 할 때에 map 함수를 사용 할 수 있다.
 id 값을 비교해서 id 가 다르다면 그대로 두고, 같다면 active 값을 반전시키도록 구현
 onToggle를 받아와서 User 에게 전달해주고, onRemove 를 구현했었던것처럼 onToggle 에 id 를 넣어서 호출하면 수정이 가능하다.
+
+
+*useEffect UserList.js
+
+마운트 : 컴포넌트가 화면상으로 나타나는 것
+언마운트 : 컴포넌트가 화면상에서 사라지는 것
+
+useEffect를 이용하여 호출시키면 호출이되고 추가적으로 호출시 호출 가능하다. 하지만 컴포넌트 삭제 또는 업데이트시에는 호출이 되지않는다.
+
+useEffect 를 사용 할 때에는 첫번째 파라미터에는 함수, 두번째 파라미터에는 의존값이 들어있는 배열 (deps)을 넣는다. 
+만약에 deps 배열을 비우게 된다면, 컴포넌트가 처음 나타날때에만 useEffect 에 등록한 함수가 호출된다.
+
+그리고, useEffect 에서는 함수를 반환 할 수 있는데 이를 cleanup 함수라고 부른다. 
+cleanup 함수는 useEffect 에 대한 뒷정리를 해준다, deps 가 비어있는 경우에는 컴포넌트가 사라질 때 cleanup 함수가 호출된다.
+
+마운트 시에 하는 작업들.
+
+1.props 로 받은 값을 컴포넌트의 로컬 상태로 설정
+2.외부 API 요청 (REST API 등)
+3.라이브러리 사용 (D3, Video.js 등...)
+4.setInterval 을 통한 반복작업 혹은 setTimeout 을 통한 작업 예약
+
+언마운트 시에 하는 작업들.
+
+1.setInterval, setTimeout 을 사용하여 등록한 작업들 clear 하기 (clearInterval, clearTimeout)
+2.라이브러리 인스턴스 제거
+
+deps 에 특정 값을 넣게 된다면, 컴포넌트가 처음 마운트 될 때에도 호출이 되고, 지정한 값이 바뀔 때에도 호출이 된다. 
+그리고, deps 안에 특정 값이 있다면 언마운트시에도 호출이되고, 값이 바뀌기 직전에도 호출이 된다.
+
+    useEffect(() => {
+        console.log('user값이 설정됨')
+        console.log(user);
+        return() => {
+            console.log('user값이 바뀌기 전');
+            console.log(user)
+        }
+    }, [user]);
+
+    이렇게 코드를 작성했다면 컴포넌트를 추가 삭제 또는 업데이트 하기 전에 
+    'user값이 설정됨'이 호출되고 user값들이 호출된다음 'user값이 바뀌기 전'이 호출된다.
+
+useEffect 안에서 사용하는 상태나, props 가 있다면, useEffect 의 deps 에 넣어주어야 한다. 그렇게 하는게, 규칙이라고 한다.
+만약 useEffect 안에서 사용하는 상태나 props 를 deps 에 넣지 않게 된다면 useEffect 에 등록한 함수가 실행 될 때 최신 props / 상태를 가르키지 않게 된다.
+
+참고로 리액트 컴포넌트는 기본적으로 부모컴포넌트가 리렌더링되면 자식 컴포넌트 또한 리렌더링이 된다. 바뀐 내용이 없다 할지라도.
+물론, 실제 DOM 에 변화가 반영되는 것은 바뀐 내용이 있는 컴포넌트에만 해당한다. 하지만, Virtual DOM 에는 모든걸 다 렌더링하고 있다는 것이다.
+
+알아둬야하는것, useEffect을 사용할땐 첫번째 파라미터에는 함수를 등록하고 두번째 파라미터에는 deps라는 배열을 등록한다.
 
 */
