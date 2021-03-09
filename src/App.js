@@ -1,4 +1,4 @@
-import React, {useRef, useState, useMemo} from 'react';
+import React, {useRef, useState, useMemo, useCallback} from 'react';
 // import Helllo from './Components/Hello';
 // import Wrapper from './Components/Wrapper';
 // import Counter from './Components/Counter';
@@ -18,13 +18,14 @@ function App() {
   });
   const { username , email} = inputs;
 
-  const onChange = e => {
+  const onChange = useCallback(e => {
     const { name , value} = e.target;
     setInputs({
       ...inputs,
       [name]: value
     });
-  };
+  },[inputs]);
+
   const [users,setUsers] = useState([
     {
         id: 1,
@@ -48,32 +49,32 @@ function App() {
 
   const nextId = useRef(4);
 
-  const onCreate = () => { //배열 추가할 때
+  const onCreate = useCallback(() => { //배열 추가할 때
     const user = {
       id: nextId.current,
       username,
       email,
     };
     //setUsers([...users,user]);
-    setUsers(users.concat(user));
+    setUsers(users => users.concat(user));
     setInputs({
       username:'',
       email:''
     });
     nextId.current += 1;
-  };
+  },[username,email]);
   
-  const onRemove = id => { //배열 제거할 때
-    setUsers(users.filter(user => user.id !== id));
-  };
+  const onRemove = useCallback(id => { //배열 제거할 때
+    setUsers(users => users.filter(user => user.id !== id));
+  },[]);
 
-  const onToggle = id => { //배열 수정할 때
-      setUsers(users.map(
+  const onToggle = useCallback(id => { //배열 수정할 때
+      setUsers(users => users.map(
         user => user.id === id
           ? { ...user, active : !user.active}
           :user
       ));
-  };
+  },[]);
   const count = useMemo(() => countActiveUsers(users), [users]);
 
   return (
@@ -300,6 +301,68 @@ useMemo 의 첫번째 파라미터에는 어떻게 연산할지 정의하는 함
 이 배열 안에 넣은 내용이 바뀌면, 등록한 함수를 호출해서 값을 연산해주고, 만약에 내용이 바뀌지 않았다면 이전에 연산한 값을 재사용하게 된다.
 
 성능 최적화를 위한 useMemo Hook
+
+
+*useCallback을 사용하여 함수 재사용하기 App.js
+
+useCallback은 useMemo와 비슷한 Hook이다.
+
+useMemo 는 특정 결과값을 재사용 할 때 사용하는 반면, useCallback 은 특정 함수를 새로 만들지 않고 재사용하고 싶을때 사용한다.
+
+위에서 작성한 함수들은 컴포넌트가 리렌더링 될 때 마다 새로 만들어진다. 
+함수를 선언하는 것 자체가 메모리도, CPU도 리소소를 많이 차지 하는 작업은 아니기 때문에 함수를 새로 선언한다고 해서 그 자체 만으로 큰 부하가 생길일은 없지만,
+한번 만든 함수를 필요할때만 새로 만들고 재사용하는 것은 여전히 중요하다.
+
+그 이유는, 나중에 컴포넌트에서 props 가 바뀌지 않았으면 Virtual DOM 에 새로 렌더링하는 것 조차 하지 않고 컴포넌트의 결과물을 재사용 하는 최적화 작업을 할것이고, 
+이 작업을 하려면, 함수를 재사용하는것이 필수이다.
+
+useCallback의 사용법은 useMemo와 비슷하게
+함수를 감싼다음 마지막엔 deps배열로 끝낸다.
+
+주의 해야할 점은, 함수 안에서 사용하는 상태 혹은 props 가 있다면 꼭, deps 배열안에 포함시켜야 된다는 것 이다. 
+만약에 deps 배열 안에 함수에서 사용하는 값을 넣지 않게 된다면, 함수 내에서 해당 값들을 참조할때 가장 최신 값을 참조 할 것이라고 보장 할 수 없다. 
+props 로 받아온 함수가 있다면, 이 또한 deps 에 넣어주어야 한다.
+
+
+*React.memo 를 사용한 컴포넌트 리렌더링 방지
+
+React.memo : 컴포넌트의 props 가 바뀌지 않았다면, 리렌더링을 방지하여 컴포넌트의 리렌더링 성능 최적화를 해줄 수 있는 함수
+React.memo를 사용한다면 컴포넌트에서 리렌더링이 필요한 상황에서만 리렌더링 되도록 설정이 가능하다.
+사용법은 그냥 감싸주면 된다.
+
+ex) export default React.memo(CreateUser);
+
+이렇게 적용했다면 input를 수정할 때 하단의 UserList가 리렌더지 않음을 확인하자.
+하지만 User중 하나라도 수정하면 모든 User들이 리렌더링 되고,CreateUser또한 리렌더링 된다.
+
+이유는 간단하다.
+users 배열이 바뀔때마다 onCreate 도 새로 만들어지고, onToggle,onRemove 도 새로 만들어지기 때문이다.
+deps에 user가 들어있기 때문에 배열이 바뀔때마다 함수가 새로 만들어지는건 당연하다
+
+이걸 최적화 하고 싶다면
+deps에서 users를 지우고 함수들에서 현재 useState로 관리하는 users를 참조하지 않게 하면 된다.
+바로 함수형 업데이트이다.
+
+함수형 업데이트를 하게 되면, setUsers에 등록하는 콜백함수의 파라미터에서 최신 users를 참조 할 수 있기 때문에 deps에 users를 넣지 않아도 된다.
+
+* 리액트 개발자 도구가 버그가 일어나서 CreatUser도 렌더링된 것처럼 보인다면 console.log 찍어서 렌더링이 되는지 않되는지 확인해볼 수 있다.
+
+리액트를 개발할 때, useCallback, useMemo, React.memo는 컴포넌트의 성능을 진짜로 실제로 개선할수 있는 상황에서만 사용하도록 하자.
+
+예를 들어, User컴포넌트에 b 와 button 에 onclick으로 설정해준 함수들은, 해당 함수들을 useCallback으로 재사용한다고 해서 리렌더링을 막을 수 있는게 아니므로,굳이 그렇게까지 안해도 된다.
+
+추가적으로, 렌더링 최적화를 하지 않을 컴포넌트에 React.memo를 사용하는 것은 불필요한 props 비교만 하는 것이기 때문에 실제로 렌더링을 방지할수있는 상황에서만 사용하도록 하자.
+
+또, React.memo 에서 두번째 파라미터에 propsAreEqual 이라는 함수를 사용하여 특정 값들만 비교를 하는 것도 가능하다.
+export default React.memo(
+  UserList,
+  (prevProps, nextProps) => prevProps.users === nextProps.users
+);
+
+하지만 이것들을 잘못사용하게 된다면 많은 버그들이 생겨날 것이다. 예를 들어 함수형 업데이트 전환을 하지 않고 이렇게 users만 비교를 하게 된다면, 
+onToggle 과 onRemove 에서 최신 users 배열을 참조하지 않으므로 심각한 오류가 발생할 수 도 있다.
+
+
 
 
 */
