@@ -1,4 +1,4 @@
-import React, {useRef, useState, useMemo, useCallback} from 'react';
+import React, {useRef, useReducer, useMemo, useCallback} from 'react';
 // import Helllo from './Components/Hello';
 // import Wrapper from './Components/Wrapper';
 // import Counter from './Components/Counter';
@@ -11,23 +11,13 @@ function countActiveUsers(users){  // 활성 사용자 수를 세는 함수
   return users.filter(user => user.active).length;
 }
 
-function App() {
-  const  [inputs, setInputs] = useState({
+const initialState = {
+  inputs: {
     username: '',
-    email: '',
-  });
-  const { username , email} = inputs;
-
-  const onChange = useCallback(e => {
-    const { name , value} = e.target;
-    setInputs({
-      ...inputs,
-      [name]: value
-    });
-  },[inputs]);
-
-  const [users,setUsers] = useState([
-    {
+    email: ''
+  },
+  users: [
+      {
         id: 1,
         username: 'Gihong',
         email: 'kimgihong9@naver.com',
@@ -45,47 +35,98 @@ function App() {
         email: 'kimgihong1127@naver.com',
         active: false,
     },
-]);
+  ]
+}
 
+function reducer(state,action){
+  switch (action.type) {
+    case 'CHANGE_INPUT':
+      return {
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value
+        }
+      };
+      case 'CREATE_USER' :
+        return {
+          inputs: initialState.inputs,
+          users: state.users.concat(action.user)
+        }
+      case 'TOGGLE_USER':
+        return {
+          ...state,
+          users: state.users.map(user => 
+            user.id === action.id
+              ? { ...user, active : !user.active}
+              :user
+            )
+        };
+        case 'REMOVE_USER':
+          return {
+            ...state,
+            users: state.users.filter(user => user.id !== action.id )
+          }
+      default:
+        throw new Error('Unhandled action')
+  }
+}
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const nextId = useRef(4);
+  const { users } = state;
+  const { username, email } = state.inputs;
 
-  const onCreate = useCallback(() => { //배열 추가할 때
-    const user = {
-      id: nextId.current,
-      username,
-      email,
-    };
-    //setUsers([...users,user]);
-    setUsers(users => users.concat(user));
-    setInputs({
-      username:'',
-      email:''
+  const onChange = useCallback(e => {
+    const { name, value } = e.target;
+    dispatch ({
+      type: 'CHANGE_INPUT',
+      name,
+      value
+    })
+  },[]);
+
+  const onCreate = useCallback(() => {
+    dispatch({
+      type: 'CREATE_USER',
+      user:{
+        id:nextId.current,
+        username,
+        email,
+      }
     });
     nextId.current += 1;
-  },[username,email]);
-  
-  const onRemove = useCallback(id => { //배열 제거할 때
-    setUsers(users => users.filter(user => user.id !== id));
+  }, [username, email])
+
+  const onToggle = useCallback(id => {
+    dispatch({
+      type: 'TOGGLE_USER',
+      id
+    });
   },[]);
 
-  const onToggle = useCallback(id => { //배열 수정할 때
-      setUsers(users => users.map(
-        user => user.id === id
-          ? { ...user, active : !user.active}
-          :user
-      ));
+  const onRemove = useCallback(id => {
+    dispatch({
+      type: 'REMOVE_USER',
+      id
+    });
   },[]);
-  const count = useMemo(() => countActiveUsers(users), [users]);
+
+  const count = useMemo(() => countActiveUsers(users), [users])
 
   return (
     <>
-      <CreateUser
-        username={username}
-        email={email}
+      <CreateUser 
+        username={username} 
+        email={email} 
         onChange={onChange}
-        onCreate={onCreate}  
+        onCreate={onCreate}        
       />
-      <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
+      <UserList users={users} 
+        onToggle={onToggle}
+        onRemove={onRemove}
+      />
       <div>활성 사용자 수: {count}</div>
     </>
 
@@ -373,5 +414,40 @@ ex) dispatch({
       type : 'INCREMENT', 
       diff : 4
     }) 이 예제에서 type이라는 값을 이용하여 어떤 업데이트를 진행할지 명시를 할 수 있고, 업데이트할때 필요한 참조하고싶은 다른값이 있다면 diff 객체안에 넣을수도 있다.
+
+이 useReducer라는 Hook를 사용하면 상태 업데이트 로직을 컴포넌트 밖으로 분리가 가능하고 다른 파일에서 작성후 불러 올수도 있다.
+
+reducer : 상태를 업데이트하는 함수
+
+아래 코드처럼 활용이 가능하다
+
+function reducer(state, aciton) {
+  switch (action.type) {
+    case 'INCREMENT':
+      return state + 1;
+    case 'DECREMENT':
+      return state - 1;
+    default:
+      return state;
+  }
+}
+
+현재 상태와 action객체를 파라미터로 받아와서 새로운 상태를 반환해주는 형태를 갖추고 있어야 한다.
+
+useReducer 사용법
+
+const [number, dispatch] = useReducer(reducer, 0);
+
+첫번째 항목에 있는 number는 현재 상태를 의미하고 , dispatch는 action을 발생시켜주는 함수이다.
+
+useReducer 이해하기
+
+상태를 업데이트 할 때에는 useState를 사용해서 새로운 상태를 설정해주었는데, 상태를 관리하게 될 떄 useState를 사용하는 것 말고도 다른 방법이 있다.
+바로 useReducer를 사용하면 된다.이 Hook 함수를 사용하면 컴포넌트의 상태 업데이트 로직을 컴포넌트에서 분리할 수 있다.상태 업데이트 로직을 컴포넌트 바깥에 작성할 수도 있고,
+심지어 다른 파일에 작성 후 불러와서 사용 할 수도 있다.
+
+useState & useReducer 뭘 써야 할지 고민 될때는
+
+useReducer를 사용하여 편해질 것 같다면 useReducer를 쓰면되고 불편할것 같다면 useState를 쓰자.
 
 */
