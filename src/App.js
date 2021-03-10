@@ -1,4 +1,4 @@
-import React, {useRef, useReducer, useMemo, useCallback} from 'react';
+import React, {useRef, useReducer, useMemo, useCallback, createContext} from 'react';
 // import Helllo from './Components/Hello';
 // import Wrapper from './Components/Wrapper';
 // import Counter from './Components/Counter';
@@ -61,87 +61,19 @@ function reducer(state,action){
   }
 }
 
+export const UserDispatch = createContext(null);
+
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [form, onChange, reset] = useInputs({
-    username: '',
-    email: '',
-  });
-  const { username, email} = form; 
-  const nextId = useRef(4);
   const { users } = state;
-  
-
-  // const onChange = useCallback(e => {
-  //   const { name, value } = e.target;
-  //   dispatch ({
-  //     type: 'CHANGE_INPUT',
-  //     name,
-  //     value
-  //   })
-  // },[]);
-
-  const onCreate = useCallback(() => {
-    dispatch({
-      type: 'CREATE_USER',
-      user:{
-        id:nextId.current,
-        username,
-        email,
-      }
-    });
-    nextId.current += 1;
-    reset();
-  }, [username, email, reset])
-
-  const onToggle = useCallback(id => {
-    dispatch({
-      type: 'TOGGLE_USER',
-      id
-    });
-  },[]);
-
-  const onRemove = useCallback(id => {
-    dispatch({
-      type: 'REMOVE_USER',
-      id
-    });
-  },[]);
-
   const count = useMemo(() => countActiveUsers(users), [users])
 
   return (
-    <>
-      <CreateUser 
-        username={username} 
-        email={email} 
-        onChange={onChange}
-        onCreate={onCreate}        
-      />
-      <UserList users={users} 
-        onToggle={onToggle}
-        onRemove={onRemove}
-      />
-      <div>활성 사용자 수: {count}</div>
-    </>
-
-
-    // <InputSample />
-    //<Counter />
-
-    // <Wrapper>
-    //   <Helllo name = "react" color = "red" isSpecial={true}/>
-    //   <Helllo color = "pink"/>
-    // </Wrapper>
-
-    // <>
-    // {/* jsx 내부에서 주석을 사용하려면 {}를 사용하자.*/}
-    //   <Helllo 
-    //     //이런식으로 작성하는 주석은 화면에 나타나지 않는다.
-    //   /> 
-    //   <div style = {style}>{name}</div>
-    //   <div className = "gray-box"></div>
-    // </>
+  <UserDispatch.Provider value = {dispatch}>
+    <CreateUser />
+    <UserList users={users} />
+    <div>활성 사용자 수: {count}</div>
+  </UserDispatch.Provider>
   );
 }
 export default App;
@@ -455,4 +387,34 @@ useReducer를 사용하여 편해질 것 같다면 useReducer를 쓰면되고 �
 
 커스텀 Hooks를 만드는 방법은 굉장히 간단하다.
 그냥, 그 안에서 useState, useEffect, useReducer, useCallback 등 Hooks를 사용하여 원하는 기능을 구현해주고, 컴포넌트에서 사용하고 싶은 값들을 변환해주면 된다.
+
+
+* Context API 를 사용한 전역 값 관리
+
+이떄까지의 UserList 컴포넌트는 onToggle과 onRemove를 전달하기 위한 중간다리 역할로만 사용되고있었다.
+또 해당함수들을 직접 사용하는 일도 없었다.
+컴포넌트를 하나정도 거쳐 전달을 한다면 문제가 없을테지만 여러개의 컴포넌트를 거쳐 전달을 한다면 이는 매우 번거로울 것이다.
+이떄 리액트의 Context Api와 dispatch를 사용하여 복잡한 구조를 해결할 수 있다.
+
+리액트의 Context Api를 이용하면, 프로젝트 안에서 전역적으로 사용할 수 있는 값을 관리할 수 있다. 여기서 값은 함수일수도 있고, 어떤 외부 라이브러리 인스턴스일수도 있고 심지어 DOM일수도 있다.
+
+Context를 만들떄는 React.createContext() 라는 함수를 사용합니다.
+
+const UserDispatch = React.createContext(null);
+
+createContext의 파라미터에는 context의 기본값을 설정할 수 있다.여기서 설정하는 값은 context를 쓸 때 값을 따로 지정하지 않을 경우 사용되는 기본 값이다.
+
+context를 만들면 context안에 provider라는 컴포넌트가 들어있는데 이 컴포넌트를 통하여 context의 값을 정할 수 있다.
+이 컴포넌트를 사용할때 value라는 값을 설정해주면 된다.
+
+<UserDispatch.Provider value={dispatch}>...</UserDispatch.Provider>
+
+이렇게 설정해준다면 provider에 의하여 감싸진 컴포넌트 중 어디서든지 우리가 context의 값을 다른 곳에서 바로 조회해서 사용할 수 있다.
+
+Context API를 사용해서 dispatch를 어디서든지 조회해서 사용해줄수 있게하면 코드의 구조가 훨씬 깔끔해질 수 있다.
+
+이 Context API를 사용해보면서 useState와 useReducer의 큰 차이점을 발견했을 것이다.
+useReducer를 사용하면 이렇게 dispatch를 Context API를 사용해서 전역적으로 사용 할 수 있게 해주면 컴포넌트에게 함수를 전달 해줘야 하는 상황에서 코드의 구조가 훨씬 깔끔해줄수 있다.
+
+만약 깊은 곳에 위치하는 컴포넌트에게 여러 컴포넌트를 거쳐서 함수를 전달해야 하는 일이 있다면 Context API를 사용하면 될것같다.
 */

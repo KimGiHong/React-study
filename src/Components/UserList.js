@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useContext } from 'react';
+import { UserDispatch } from '../App'
 
 //deps파라미터를 생략해서 이렇게 코드를 짤수 있다.
-const User = React.memo(function User({ user, onRemove, onToggle }) {
-    useEffect(() => {
-      console.log(user);
-    });
+const User = React.memo(function User({ user }) {
+    const { username, email, id, active } = user;
+    const dispatch  = useContext(UserDispatch);
 
 // function User({user, onRemove, onToggle}){
 //     const { username, email, id, active} = user; 
@@ -33,18 +33,24 @@ const User = React.memo(function User({ user, onRemove, onToggle }) {
                 color: user.active ? 'green' : 'black',
                 cursor: 'pointer'
             }}
-            onClick={() => onToggle(user.id)}
+            onClick={() => dispatch({
+                type: 'TOGGLE_USER',
+                id
+            })}
             >
                 {user.username}
             </b>
             &nbsp;
             <span>({user.email})</span>
-            <button onClick={() => onRemove(user.id)}>삭제</button>
+            <button onClick={() => dispatch({
+                type: 'REMOVE_USER',
+                id
+            })}>삭제</button>
         </div>
     )
 });
 
-function UserList({users, onRemove, onToggle}) {
+function UserList({users }) {
     return(
         <div>
             {
@@ -53,8 +59,6 @@ function UserList({users, onRemove, onToggle}) {
                         <User 
                             user ={user} 
                             key={user.id} 
-                            onRemove={onRemove}
-                            onToggle={onToggle}
                     />)
                 )
             }
