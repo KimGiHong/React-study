@@ -363,6 +363,15 @@ export default React.memo(
 onToggle 과 onRemove 에서 최신 users 배열을 참조하지 않으므로 심각한 오류가 발생할 수 도 있다.
 
 
+*useReducer Hook
 
+useState와 useReducer의 차이
+먼저 useState에서는 설정하고 싶은 다음 상태를 직접 지정주는 방식으로 상태를 업데이트하는 반면에 useReducer는 'action'이라는 객체 기반으로 형태를 업데이트한다.
+여기서 'action'객체라는 것은 업데이트할때 참조하는 객체이다.
+
+ex) dispatch({ 
+      type : 'INCREMENT', 
+      diff : 4
+    }) 이 예제에서 type이라는 값을 이용하여 어떤 업데이트를 진행할지 명시를 할 수 있고, 업데이트할때 필요한 참조하고싶은 다른값이 있다면 diff 객체안에 넣을수도 있다.
 
 */
