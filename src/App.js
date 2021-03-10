@@ -5,6 +5,7 @@ import React, {useRef, useReducer, useMemo, useCallback} from 'react';
 // import InputSample from './Components/InputSample';
 import UserList from './Components/UserList';
 import CreateUser from './Components/CreateUser';
+import useInputs from './useInputs';
 
 function countActiveUsers(users){  // 활성 사용자 수를 세는 함수
   console.log('활성 사용자 수를 세는중 ...');
@@ -12,10 +13,6 @@ function countActiveUsers(users){  // 활성 사용자 수를 세는 함수
 }
 
 const initialState = {
-  inputs: {
-    username: '',
-    email: ''
-  },
   users: [
       {
         id: 1,
@@ -40,14 +37,6 @@ const initialState = {
 
 function reducer(state,action){
   switch (action.type) {
-    case 'CHANGE_INPUT':
-      return {
-        ...state,
-        inputs: {
-          ...state.inputs,
-          [action.name]: action.value
-        }
-      };
       case 'CREATE_USER' :
         return {
           inputs: initialState.inputs,
@@ -74,18 +63,23 @@ function reducer(state,action){
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [form, onChange, reset] = useInputs({
+    username: '',
+    email: '',
+  });
+  const { username, email} = form; 
   const nextId = useRef(4);
   const { users } = state;
-  const { username, email } = state.inputs;
+  
 
-  const onChange = useCallback(e => {
-    const { name, value } = e.target;
-    dispatch ({
-      type: 'CHANGE_INPUT',
-      name,
-      value
-    })
-  },[]);
+  // const onChange = useCallback(e => {
+  //   const { name, value } = e.target;
+  //   dispatch ({
+  //     type: 'CHANGE_INPUT',
+  //     name,
+  //     value
+  //   })
+  // },[]);
 
   const onCreate = useCallback(() => {
     dispatch({
@@ -97,7 +91,8 @@ function App() {
       }
     });
     nextId.current += 1;
-  }, [username, email])
+    reset();
+  }, [username, email, reset])
 
   const onToggle = useCallback(id => {
     dispatch({
@@ -450,4 +445,14 @@ useState & useReducer 뭘 써야 할지 고민 될때는
 
 useReducer를 사용하여 편해질 것 같다면 useReducer를 쓰면되고 불편할것 같다면 useState를 쓰자.
 
+
+* 커스텀 Hooks 만들기 
+
+컴포넌트를 만들다 보면, 반복되는 로직이 자주 발생한다.
+예를 들어 input을 관리하는 코드는 관리 할 떄마다 꽤나 비슷한 코드가 반복된다.
+
+커스텀 Hooks를 만들떄에는 보통 use 라는 키워드로 시작하는 파일을 만들고 그 안에 함수를 작성한다.
+
+커스텀 Hooks를 만드는 방법은 굉장히 간단하다.
+그냥, 그 안에서 useState, useEffect, useReducer, useCallback 등 Hooks를 사용하여 원하는 기능을 구현해주고, 컴포넌트에서 사용하고 싶은 값들을 변환해주면 된다.
 */
