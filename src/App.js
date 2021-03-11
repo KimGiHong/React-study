@@ -1,4 +1,5 @@
-import React, {useRef, useReducer, useMemo, useCallback, createContext} from 'react';
+import React, {useRef, useReducer, useMemo, createContext} from 'react';
+import produce from 'immer';
 // import Helllo from './Components/Hello';
 // import Wrapper from './Components/Wrapper';
 // import Counter from './Components/Counter';
@@ -6,6 +7,7 @@ import React, {useRef, useReducer, useMemo, useCallback, createContext} from 're
 import UserList from './Components/UserList';
 import CreateUser from './Components/CreateUser';
 import useInputs from './useInputs';
+
 
 function countActiveUsers(users){  // 활성 사용자 수를 세는 함수
   console.log('활성 사용자 수를 세는중 ...');
@@ -38,24 +40,35 @@ const initialState = {
 function reducer(state,action){
   switch (action.type) {
       case 'CREATE_USER' :
-        return {
-          inputs: initialState.inputs,
-          users: state.users.concat(action.user)
-        }
+        return produce(state, draft => {
+          draft.users.push(action.user);
+        })
+        // return {
+        //   inputs: initialState.inputs,
+        //   users: state.users.concat(action.user)
+        // }
       case 'TOGGLE_USER':
-        return {
-          ...state,
-          users: state.users.map(user => 
-            user.id === action.id
-              ? { ...user, active : !user.active}
-              :user
-            )
-        };
+        return produce(state, draft => {
+          const user = draft.users.find(user => user.id === action.id);
+          user.active = !user.active;
+        });
+        // return {
+        //   ...state,
+        //   users: state.users.map(user => 
+        //     user.id === action.id
+        //       ? { ...user, active : !user.active}
+        //       :user
+        //     )
+        // };
         case 'REMOVE_USER':
-          return {
-            ...state,
-            users: state.users.filter(user => user.id !== action.id )
-          }
+          return produce(state, draft => {
+            const index = draft.users.findIndex(user => user.id === action.id);
+            draft.users.splice(index, 1);
+          })
+          // return {
+          //   ...state,
+          //   users: state.users.filter(user => user.id !== action.id )
+          // }
       default:
         throw new Error('Unhandled action')
   }
@@ -417,4 +430,9 @@ Context API를 사용해서 dispatch를 어디서든지 조회해서 사용해�
 useReducer를 사용하면 이렇게 dispatch를 Context API를 사용해서 전역적으로 사용 할 수 있게 해주면 컴포넌트에게 함수를 전달 해줘야 하는 상황에서 코드의 구조가 훨씬 깔끔해줄수 있다.
 
 만약 깊은 곳에 위치하는 컴포넌트에게 여러 컴포넌트를 거쳐서 함수를 전달해야 하는 일이 있다면 Context API를 사용하면 될것같다.
+
+
+* Immer 는 어캐 쓰는지도모르겠고 나중에 다시 공부해보자.
+
+
 */
