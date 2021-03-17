@@ -221,3 +221,6 @@ function withdraw(account, amount) {
 React는 매우 유연하지만 한 가지 엄격한 규칙이 있다.
 
 * 모든 React 컴포넌트는 자신의 props를 다룰 때 반드시 순수 함수처럼 동작해야 한다.
+
+
+### [목차로](Intro.md)

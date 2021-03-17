@@ -76,4 +76,4 @@ setInterval(tick, 1000);
 
 매초 전체 UI를 다시 그리도록 엘리먼트를 만들었지만 React DOM은 내용이 변경된 텍스트 노드만 업데이트하였다.
 
-### [다음장 Components & Props](Component&props.md) 
+### [목차로](Intro.md)

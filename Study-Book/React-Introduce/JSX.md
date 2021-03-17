@@ -1,8 +1,3 @@
-# React
-
-* Javascript의 라이브러리
-"컴포넌트"라는 개념에 집중이 되어있는 라이브러리이다.
-* * *
 # JSX
 
 ```javascript
@@ -106,4 +101,4 @@ const element = {
 이러한 객체를 `React 엘리먼트`라고 하며, 화면에서 보고 싶은 것을 나타내는 표현이라 생각하면 된다.
 React는 이 객체를 읽어서, DOM을 구성하고 최신 상태로 유지하는데 사용이 된다.
 
-### [다음장 엘리먼트 렌더링](Element-Rendering.md)
+### [목차로](Intro.md)
