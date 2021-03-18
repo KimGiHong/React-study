@@ -222,5 +222,102 @@ React는 매우 유연하지만 한 가지 엄격한 규칙이 있다.
 
 * 모든 React 컴포넌트는 자신의 props를 다룰 때 반드시 순수 함수처럼 동작해야 한다.
 
+### props 의 기본 사용법
+
+예를 들어서, App 컴포넌트에서 Hello 컴포넌트를 사용 할 때 `name`이라는 값을 전달해주고 싶다고 가정해보자.
+
+* App.js
+
+```javascript
+import React from 'react';
+import Hello from './Hello';
+
+function App() {
+  return (
+    <Hello name="react" />
+  );
+}
+
+export default App;
+```
+
+* Hello.js
+```javascript
+import React from 'react';
+
+function Hello(props) {
+  return <div>안녕하세요 {props.name}</div>
+}
+
+export default Hello;
+```
+
+컴포넌트에게 전달되는 props는 파라미터를 통하여 조회 가능하다. props는 객체형태로 전달되며, 만약 `name`값을 조회하고 싶다면 `props.name`을 조회하면 된다.
+
+### 여러개의 props, 비구조화 할당
+
+Hello 컴포넌트에 또 다른 props를 전달해보자. `color`라는 값을 설정하자.
+
+* App.js
+```javascript
+function App() {
+  return (
+    <Hello name="react" color="red"/>
+  );
+}
+```
+
+* Hello.js
+```javascript
+function Hello(props) {
+  return <div style={{ color: props.color }}>안녕하세요 {props.name}</div>
+}
+```
+props 내부의 값을 조회 할 떄마다 `props.`을 입력하고 있는데 함수의 파라미터에서 비구조화 할당(구조 분해) 문법을 사용하면 조금 더 코드를 간결하게 작성 할 수 있다.
+
+* Hello.js
+```javascript
+function Hello({ color, name }) {
+  return <div style={{ color }}>안녕하세요 {name}</div>
+}
+```
+
+### defaultProps 로 기본값 설정
+
+컴포넌트에 props를 지정하지 않았을 때 기본적으로 사용 할 값을 설정하고 싶다면 컴포넌트에 `defaultProps`라는 값을 설정하면 된다.
+
+* Hello.js
+
+```javascript
+import React from 'react';
+
+function Hello({ color, name }) {
+  return <div style={{ color }}>안녕하세요 {name}</div>
+}
+
+Hello.defaultProps = {
+  name: '이름없음'
+}
+
+export default Hello;
+```
+
+* App.js
+
+```javascript
+function App() {
+  return (
+    <>
+      <Hello name="react" color="red"/>
+      <Hello color="pink"/>
+    </>
+  );
+}
+```
+
+### props.children
+
+컴포넌트 태그 사이에 넣은 값을 조회하고 싶을 땐, `props.children`을 조회하면 된다.
+
 
 ### [목차로](Intro.md)
